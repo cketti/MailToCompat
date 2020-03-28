@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2020 cketti
  * Copyright (C) 2008 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,79 +39,125 @@ public class MailToTest {
     private static final String MAILTOURI_6 = "mailto:?to=joe@example.com&" +
             "cc=bob@example.com&body=hello";
 
+    @SuppressWarnings("ConstantConditions")
     @Test
-    public void testParseMailToURI() {
+    public void isMailTo_withNullArgument_shouldReturnFalse() {
         assertFalse(MailTo.isMailTo(null));
+    }
+
+    @Test
+    public void isMailTo_withEmptyString_shouldReturnFalse() {
         assertFalse(MailTo.isMailTo(""));
+    }
+
+    @Test
+    public void isMailTo_withHttpUrl_shouldReturnFalse() {
         assertFalse(MailTo.isMailTo("http://www.google.com"));
+    }
 
+    @Test
+    public void isMailTo_withValidMailtoUris_shouldReturnTrue() {
         assertTrue(MailTo.isMailTo(MAILTOURI_1));
-        MailTo mailTo_1 = MailTo.parse(MAILTOURI_1);
-        assertEquals("chris@example.com", mailTo_1.getTo());
-        assertEquals(1, mailTo_1.getHeaders().size());
-        assertNull(mailTo_1.getBody());
-        assertNull(mailTo_1.getCc());
-        assertNull(mailTo_1.getSubject());
-        assertEquals("mailto:?to=chris%40example.com&", mailTo_1.toString());
-
         assertTrue(MailTo.isMailTo(MAILTOURI_2));
-        MailTo mailTo_2 = MailTo.parse(MAILTOURI_2);
-        assertEquals(2, mailTo_2.getHeaders().size());
-        assertEquals("infobot@example.com", mailTo_2.getTo());
-        assertEquals("current-issue", mailTo_2.getSubject());
-        assertNull(mailTo_2.getBody());
-        assertNull(mailTo_2.getCc());
-        String stringUrl = mailTo_2.toString();
+        assertTrue(MailTo.isMailTo(MAILTOURI_3));
+        assertTrue(MailTo.isMailTo(MAILTOURI_4));
+        assertTrue(MailTo.isMailTo(MAILTOURI_5));
+        assertTrue(MailTo.isMailTo(MAILTOURI_6));
+    }
+
+    @Test
+    public void simpleMailtoUri() {
+        MailTo mailTo = MailTo.parse(MAILTOURI_1);
+
+        assertEquals("chris@example.com", mailTo.getTo());
+        assertEquals(1, mailTo.getHeaders().size());
+        assertNull(mailTo.getBody());
+        assertNull(mailTo.getCc());
+        assertNull(mailTo.getSubject());
+        assertEquals("mailto:?to=chris%40example.com&", mailTo.toString());
+    }
+
+    @Test
+    public void subjectQueryParameter() {
+        MailTo mailTo = MailTo.parse(MAILTOURI_2);
+
+        assertEquals(2, mailTo.getHeaders().size());
+        assertEquals("infobot@example.com", mailTo.getTo());
+        assertEquals("current-issue", mailTo.getSubject());
+        assertNull(mailTo.getBody());
+        assertNull(mailTo.getCc());
+
+        String stringUrl = mailTo.toString();
+
         assertTrue(stringUrl.startsWith("mailto:?"));
         assertTrue(stringUrl.contains("to=infobot%40example.com&"));
         assertTrue(stringUrl.contains("subject=current-issue&"));
+    }
 
-        assertTrue(MailTo.isMailTo(MAILTOURI_3));
-        MailTo mailTo_3 = MailTo.parse(MAILTOURI_3);
-        assertEquals(2, mailTo_3.getHeaders().size());
-        assertEquals("infobot@example.com", mailTo_3.getTo());
-        assertEquals("send current-issue", mailTo_3.getBody());
-        assertNull(mailTo_3.getCc());
-        assertNull(mailTo_3.getSubject());
-        stringUrl = mailTo_3.toString();
+    @Test
+    public void bodyQueryParameter() {
+        MailTo mailTo = MailTo.parse(MAILTOURI_3);
+
+        assertEquals(2, mailTo.getHeaders().size());
+        assertEquals("infobot@example.com", mailTo.getTo());
+        assertEquals("send current-issue", mailTo.getBody());
+        assertNull(mailTo.getCc());
+        assertNull(mailTo.getSubject());
+
+        String stringUrl = mailTo.toString();
+
         assertTrue(stringUrl.startsWith("mailto:?"));
         assertTrue(stringUrl.contains("to=infobot%40example.com&"));
         assertTrue(stringUrl.contains("body=send%20current-issue&"));
+    }
 
-        assertTrue(MailTo.isMailTo(MAILTOURI_4));
-        MailTo mailTo_4 = MailTo.parse(MAILTOURI_4);
-        assertEquals(2, mailTo_4.getHeaders().size());
-        assertEquals("infobot@example.com", mailTo_4.getTo());
-        assertEquals("send current-issue\r\nsend index", mailTo_4.getBody());
-        assertNull(mailTo_4.getCc());
-        assertNull(mailTo_4.getSubject());
-        stringUrl = mailTo_4.toString();
+    @Test
+    public void bodyQueryParameterWithLineBreak() {
+        MailTo mailTo = MailTo.parse(MAILTOURI_4);
+
+        assertEquals(2, mailTo.getHeaders().size());
+        assertEquals("infobot@example.com", mailTo.getTo());
+        assertEquals("send current-issue\r\nsend index", mailTo.getBody());
+        assertNull(mailTo.getCc());
+        assertNull(mailTo.getSubject());
+
+        String stringUrl = mailTo.toString();
+
         assertTrue(stringUrl.startsWith("mailto:?"));
         assertTrue(stringUrl.contains("to=infobot%40example.com&"));
         assertTrue(stringUrl.contains("body=send%20current-issue%0D%0Asend%20index&"));
+    }
 
+    @Test
+    public void ccAndBodyQueryParameters() {
+        MailTo mailTo = MailTo.parse(MAILTOURI_5);
 
-        assertTrue(MailTo.isMailTo(MAILTOURI_5));
-        MailTo mailTo_5 = MailTo.parse(MAILTOURI_5);
-        assertEquals(3, mailTo_5.getHeaders().size());
-        assertEquals("joe@example.com", mailTo_5.getTo());
-        assertEquals("bob@example.com", mailTo_5.getCc());
-        assertEquals("hello", mailTo_5.getBody());
-        assertNull(mailTo_5.getSubject());
-        stringUrl = mailTo_5.toString();
+        assertEquals(3, mailTo.getHeaders().size());
+        assertEquals("joe@example.com", mailTo.getTo());
+        assertEquals("bob@example.com", mailTo.getCc());
+        assertEquals("hello", mailTo.getBody());
+        assertNull(mailTo.getSubject());
+
+        String stringUrl = mailTo.toString();
+
         assertTrue(stringUrl.startsWith("mailto:?"));
         assertTrue(stringUrl.contains("cc=bob%40example.com&"));
         assertTrue(stringUrl.contains("body=hello&"));
         assertTrue(stringUrl.contains("to=joe%40example.com&"));
+    }
 
-        assertTrue(MailTo.isMailTo(MAILTOURI_6));
-        MailTo mailTo_6 = MailTo.parse(MAILTOURI_6);
-        assertEquals(3, mailTo_6.getHeaders().size());
-        assertEquals(", joe@example.com", mailTo_6.getTo());
-        assertEquals("bob@example.com", mailTo_6.getCc());
-        assertEquals("hello", mailTo_6.getBody());
-        assertNull(mailTo_6.getSubject());
-        stringUrl = mailTo_6.toString();
+    @Test
+    public void toAndCcQueryParameters() {
+        MailTo mailTo = MailTo.parse(MAILTOURI_6);
+
+        assertEquals(3, mailTo.getHeaders().size());
+        assertEquals(", joe@example.com", mailTo.getTo());
+        assertEquals("bob@example.com", mailTo.getCc());
+        assertEquals("hello", mailTo.getBody());
+        assertNull(mailTo.getSubject());
+
+        String stringUrl = mailTo.toString();
+
         assertTrue(stringUrl.startsWith("mailto:?"));
         assertTrue(stringUrl.contains("cc=bob%40example.com&"));
         assertTrue(stringUrl.contains("body=hello&"));

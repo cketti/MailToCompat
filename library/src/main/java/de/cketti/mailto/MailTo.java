@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2020 cketti
  * Copyright (C) 2008 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +19,8 @@ package de.cketti.mailto;
 
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -31,17 +34,13 @@ import java.util.Map;
  *
  */
 public class MailTo {
-
-    static public final String MAILTO_SCHEME = "mailto:";
-
-    // All the parsed content is added to the headers.
-    private HashMap<String, String> mHeaders;
+    public static final String MAILTO_SCHEME = "mailto:";
 
     // Well known headers
-    static private final String TO = "to";
-    static private final String BODY = "body";
-    static private final String CC = "cc";
-    static private final String SUBJECT = "subject";
+    private static final String TO = "to";
+    private static final String BODY = "body";
+    private static final String CC = "cc";
+    private static final String SUBJECT = "subject";
 
 
     /**
@@ -50,10 +49,7 @@ public class MailTo {
      * @return true if the string is a mailto URL
      */
     public static boolean isMailTo(String url) {
-        if (url != null && url.startsWith(MAILTO_SCHEME)) {
-            return true;
-        }
-        return false;
+        return url != null && url.startsWith(MAILTO_SCHEME);
     }
 
     /**
@@ -67,6 +63,7 @@ public class MailTo {
         if (url == null) {
             throw new NullPointerException();
         }
+
         if (!isMailTo(url)) {
             throw new ParseException("Not a mailto scheme");
         }
@@ -82,32 +79,47 @@ public class MailTo {
             query = url.substring(queryIndex + 1);
         }
 
-        MailTo m = new MailTo();
+        MailTo mailTo = new MailTo();
 
         // Parse out the query parameters
         if (query != null ) {
             String[] queries = query.split("&");
-            for (String q : queries) {
-                String[] nameval = q.split("=", 2);
-                if (nameval.length == 0) {
+            for (String queryParameter : queries) {
+                String[] nameValueArray = queryParameter.split("=", 2);
+                if (nameValueArray.length == 0) {
                     continue;
                 }
+
                 // insert the headers with the name in lowercase so that
                 // we can easily find common headers
-                m.mHeaders.put(Uri.decode(nameval[0]).toLowerCase(Locale.ROOT),
-                        nameval.length > 1 ? Uri.decode(nameval[1]) : null);
+                String queryParameterKey = Uri.decode(nameValueArray[0]).toLowerCase(Locale.ROOT);
+                String queryParameterValue = nameValueArray.length > 1 ? Uri.decode(nameValueArray[1]) : null;
+
+                mailTo.headers.put(queryParameterKey, queryParameterValue);
             }
         }
 
         // Address can be specified in both the headers and just after the
         // mailto line. Join the two together.
-        String addr = m.getTo();
-        if (addr != null) {
-            address += ", " + addr;
+        String toParameter = mailTo.getTo();
+        if (toParameter != null) {
+            address += ", " + toParameter;
         }
-        m.mHeaders.put(TO, address);
+        mailTo.headers.put(TO, address);
 
-        return m;
+        return mailTo;
+    }
+
+
+    // All the parsed content is added to the headers.
+    private HashMap<String, String> headers;
+
+    /**
+     * Private constructor. The only way to build a Mailto object is through
+     * the parse() method.
+     */
+    private MailTo() {
+        headers = new HashMap<>();
     }
 
     /**
@@ -117,7 +129,7 @@ public class MailTo {
      * @return comma delimited email addresses or null
      */
     public String getTo() {
-        return mHeaders.get(TO);
+        return headers.get(TO);
     }
 
     /**
@@ -127,7 +139,7 @@ public class MailTo {
      * @return comma delimited email addresses or null
      */
     public String getCc() {
-        return mHeaders.get(CC);
+        return headers.get(CC);
     }
 
     /**
@@ -136,7 +148,7 @@ public class MailTo {
      * @return subject or null
      */
     public String getSubject() {
-        return mHeaders.get(SUBJECT);
+        return headers.get(SUBJECT);
     }
 
     /**
@@ -145,7 +157,7 @@ public class MailTo {
      * @return body or null
      */
     public String getBody() {
-        return mHeaders.get(BODY);
+        return headers.get(BODY);
     }
 
     /**
@@ -153,27 +165,20 @@ public class MailTo {
      * @return map containing all parsed values
      */
     public Map<String, String> getHeaders() {
-        return mHeaders;
+        return headers;
     }
 
+    @NonNull
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(MAILTO_SCHEME);
         sb.append('?');
-        for (Map.Entry<String,String> header : mHeaders.entrySet()) {
+        for (Map.Entry<String,String> header : headers.entrySet()) {
             sb.append(Uri.encode(header.getKey()));
             sb.append('=');
             sb.append(Uri.encode(header.getValue()));
             sb.append('&');
         }
         return sb.toString();
-    }
-
-    /**
-     * Private constructor. The only way to build a Mailto object is through
-     * the parse() method.
-     */
-    private MailTo() {
-        mHeaders = new HashMap<String, String>();
     }
 }
