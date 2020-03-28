@@ -30,7 +30,7 @@ import java.util.Map;
  * MailTo URL parser
  *
  * This class parses a mailto scheme URL and then can be queried for
- * the parsed parameters. This implements RFC 2368.
+ * the parsed parameters. This implements RFC 6068.
  *
  */
 public class MailTo {
@@ -40,6 +40,7 @@ public class MailTo {
     private static final String TO = "to";
     private static final String BODY = "body";
     private static final String CC = "cc";
+    private static final String BCC = "bcc";
     private static final String SUBJECT = "subject";
 
 
@@ -146,6 +147,16 @@ public class MailTo {
      */
     public String getCc() {
         return headers.get(CC);
+    }
+
+    /**
+     * Retrieve the BCC address line from the parsed mailto URL. This could be
+     * several email address that are comma-space delimited.
+     * If no BCC line was specified, then null is return
+     * @return comma delimited email addresses or null
+     */
+    public String getBcc() {
+        return headers.get(BCC);
     }
 
     /**

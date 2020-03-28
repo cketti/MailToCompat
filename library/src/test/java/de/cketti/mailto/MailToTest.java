@@ -223,4 +223,11 @@ public class MailToTest {
 
         assertEquals("", mailTo.getTo());
     }
+
+    @Test
+    public void bccRecipient() {
+        MailTo mailTo = MailTo.parse("mailto:alice@example.com?BCC=joe@example.com");
+
+        assertEquals("joe@example.com", mailTo.getBcc());
+    }
 }
