@@ -35,3 +35,26 @@ dependencies {
     testImplementation 'junit:junit:4.13'
     testImplementation 'org.robolectric:robolectric:4.3.1'
 }
+
+project.ext {
+    pom = [
+            group: "de.cketti.mailto",
+            artifactId: "mailto-compat",
+            name: "MailToCompat",
+            description: "A drop-in replacement for Android's (buggy) MailTo class",
+            url: "https://github.com/cketti/MailToCompat",
+
+            scmUrl: "https://github.com/cketti/MailToCompat",
+            scmConnection: "scm:git@github.com:cketti/MailToCompat.git",
+            scmDevConnection: "scm:git@github.com:cketti/MailToCompat.git",
+
+            licenseName: "The Apache Software License, Version 2.0",
+            licenseUrl: "http://www.apache.org/licenses/LICENSE-2.0.txt",
+            licenseDist: "repo",
+
+            developerId: "cketti",
+            developerName: "cketti"
+    ]
+}
+
+apply from: '../android-mvn-push.gradle'
