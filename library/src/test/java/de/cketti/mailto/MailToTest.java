@@ -201,4 +201,26 @@ public class MailToTest {
 
         assertEquals("one:two", mailTo.getBody());
     }
+
+    @Test
+    public void emailAddressAndFragment() {
+        MailTo mailTo = MailTo.parse("mailto:alice@example.com#fragment");
+
+        assertEquals("alice@example.com", mailTo.getTo());
+    }
+
+    @Test
+    public void emailAddressAndQueryAndFragment() {
+        MailTo mailTo = MailTo.parse("mailto:alice@example.com?cc=bob@example.com#fragment");
+
+        assertEquals("alice@example.com", mailTo.getTo());
+        assertEquals("bob@example.com", mailTo.getCc());
+    }
+
+    @Test
+    public void fragmentWithValueThatLooksLikeQueryPart() {
+        MailTo mailTo = MailTo.parse("mailto:#?to=alice@example.com");
+
+        assertEquals("", mailTo.getTo());
+    }
 }

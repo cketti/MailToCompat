@@ -68,6 +68,12 @@ public class MailTo {
             throw new ParseException("Not a mailto scheme");
         }
 
+        // Drop fragment if present
+        int fragmentIndex = url.indexOf('#');
+        if (fragmentIndex != -1) {
+            url = url.substring(0, fragmentIndex);
+        }
+
         String address;
         String query;
         int queryIndex = url.indexOf('?');
