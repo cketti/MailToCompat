@@ -88,7 +88,7 @@ public class MailTo {
         if (query != null ) {
             String[] queries = query.split("&");
             for (String q : queries) {
-                String[] nameval = q.split("=");
+                String[] nameval = q.split("=", 2);
                 if (nameval.length == 0) {
                     continue;
                 }
