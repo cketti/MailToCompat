@@ -70,13 +70,21 @@ public class MailTo {
         if (!isMailTo(url)) {
             throw new ParseException("Not a mailto scheme");
         }
-        // Strip the scheme as the Uri parser can't cope with it.
-        String noScheme = url.substring(MAILTO_SCHEME.length());
-        Uri email = Uri.parse(noScheme);
+
+        String address;
+        String query;
+        int queryIndex = url.indexOf('?');
+        if (queryIndex == -1) {
+            address = Uri.decode(url.substring(MAILTO_SCHEME.length()));
+            query = null;
+        } else {
+            address = Uri.decode(url.substring(MAILTO_SCHEME.length(), queryIndex));
+            query = url.substring(queryIndex + 1);
+        }
+
         MailTo m = new MailTo();
 
         // Parse out the query parameters
-        String query = email.getQuery();
         if (query != null ) {
             String[] queries = query.split("&");
             for (String q : queries) {
@@ -93,14 +101,11 @@ public class MailTo {
 
         // Address can be specified in both the headers and just after the
         // mailto line. Join the two together.
-        String address = email.getPath();
-        if (address != null) {
-            String addr = m.getTo();
-            if (addr != null) {
-                address += ", " + addr;
-            }
-            m.mHeaders.put(TO, address);
+        String addr = m.getTo();
+        if (addr != null) {
+            address += ", " + addr;
         }
+        m.mHeaders.put(TO, address);
 
         return m;
     }
