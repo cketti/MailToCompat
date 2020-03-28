@@ -116,4 +116,42 @@ public class MailToTest {
         assertTrue(stringUrl.contains("body=hello&"));
         assertTrue(stringUrl.contains("to=%2C%20joe%40example.com&"));
     }
+
+    @Test
+    public void encodedAmpersandInBody() {
+        MailTo mailTo = MailTo.parse("mailto:alice@example.com?body=a%26b");
+
+        assertEquals("a&b", mailTo.getBody());
+    }
+
+    @Test
+    public void encodedEqualSignInBody() {
+        MailTo mailTo = MailTo.parse("mailto:alice@example.com?body=a%3Db");
+
+        assertEquals("a=b", mailTo.getBody());
+    }
+
+    @Test
+    public void unencodedEqualsSignInBody() {
+        // This is not a properly encoded mailto URI. But there's no good reason to drop everything
+        // after the equals sign in the 'body' query parameter value.
+        MailTo mailTo = MailTo.parse("mailto:alice@example.com?body=foo=bar&subject=test");
+
+        assertEquals("foo=bar", mailTo.getBody());
+        assertEquals("test", mailTo.getSubject());
+    }
+
+    @Test
+    public void encodedPercentValueInBody() {
+        MailTo mailTo = MailTo.parse("mailto:alice@example.com?body=%2525");
+
+        assertEquals("%25", mailTo.getBody());
+    }
+
+    @Test
+    public void colonInBody() {
+        MailTo mailTo = MailTo.parse("mailto:alice@example.com?body=one:two");
+
+        assertEquals("one:two", mailTo.getBody());
+    }
 }
