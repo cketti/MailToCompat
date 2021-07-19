@@ -4,6 +4,8 @@
 
 A drop-in replacement for Android's buggy [`MailTo`](https://developer.android.com/reference/android/net/MailTo) class to parse `mailto:` URIs.
 
+**DEPRECATED**: Use [androidx.core.net.MailTo](https://developer.android.com/reference/kotlin/androidx/core/net/MailTo) instead. Read [android.net.MailTo is broken](https://cketti.de/2020/06/22/android-net-mailto-is-broken/) for more details.
+
 ## Include the library
 
 Add this to your `dependencies` block in `build.gradle`:
